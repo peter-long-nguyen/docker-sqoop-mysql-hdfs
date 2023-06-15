@@ -1,0 +1,47 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: your_db
+      MYSQL_USER: your_user
+      MYSQL_PASSWORD: 1234
+    networks:
+      - my-network
+
+  jupyter:
+    container_name: jupyter-upgrad
+    image: jupyter/pyspark-notebook
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/home/jovyan/work
+    depends_on:
+      - mysql
+    networks:
+      - my-network
+    environment:
+      - GRANT_SUDO=yes
+
+  sqoop-server:
+    build: ./sqoop
+    container_name: sqoop-server
+    networks:
+      - my-network
+    links:
+      - mysql
+    ports:
+      - "12000:12000"
+      - "50070:50070"
+      - "8088:8088"
+      - "8042:8042"
+    tty: true
+
+networks:
+  my-network:
+    driver: bridge
